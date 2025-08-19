@@ -1,122 +1,372 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mantap AI</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-r from-indigo-100 via-white to-pink-100 min-h-screen flex flex-col">
-
-  <!-- Header -->
-  <header class="bg-white/70 backdrop-blur-md shadow-md py-4 px-6 sticky top-0 z-10">
-    <h1 class="text-2xl font-bold text-indigo-600 text-center">✨ Mantap AI ✨</h1>
-    <p class="text-center text-gray-500 text-sm">Asisten pintar siap membantu Anda</p>
-  </header>
-
-  <!-- Chat Container -->
-  <main class="flex-1 flex justify-center py-6 px-4">
-    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
-      
-      <!-- Chat messages -->
-      <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        <div class="text-center text-gray-400 text-sm">💬 Mulai percakapan dengan Mantap AI</div>
-      </div>
-
-      <!-- Input form -->
-      <form id="chat-form" class="flex items-center gap-2 border-t bg-white p-4">
-        <input 
-          type="text" 
-          id="user-input" 
-          name="prompt" 
-          placeholder="Ketik pesan Anda..." 
-          class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-          required
-        >
-        <button 
-          type="submit" 
-          class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 transition"
-        >
-          Kirim
-        </button>
-      </form>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-white/70 backdrop-blur-md shadow-inner py-3 text-center text-gray-600 text-sm">
-    &copy; 2025 Muhammad Dhiyaul Atha. All Rights Reserved.
-  </footer>
-
-  <script>
-    const chatForm = document.getElementById("chat-form");
-    const userInput = document.getElementById("user-input");
-    const chatBox = document.getElementById("chat-box");
-
-    function addMessage(sender, text) {
-      const div = document.createElement("div");
-      div.classList.add("flex", sender === "user" ? "justify-end" : "justify-start", "animate-fadeIn");
-      div.innerHTML = `
-        <div class="max-w-xs md:max-w-sm px-4 py-2 rounded-2xl shadow 
-          ${sender === "user" 
-            ? "bg-indigo-500 text-white rounded-br-none" 
-            : "bg-gray-200 text-gray-800 rounded-bl-none"}">
-          ${text}
-        </div>`;
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const message = userInput.value.trim();
-      if (!message) return;
-
-      addMessage("user", message);
-      userInput.value = "";
-
-      // Loading bubble
-      const loadingDiv = document.createElement("div");
-      loadingDiv.classList.add("flex", "justify-start");
-      loadingDiv.innerHTML = `
-        <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-2xl rounded-bl-none animate-pulse">
-          ...
-        </div>`;
-      chatBox.appendChild(loadingDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      try {
-        const formData = new FormData();
-        formData.append("prompt", message);
-
-        const response = await fetch("/chat", {
-          method: "POST",
-          body: formData
-        });
-        const data = await response.json();
-
-        loadingDiv.remove();
-        if (data.reply) {
-          addMessage("bot", data.reply);
-        } else {
-          addMessage("bot", "⚠️ Terjadi kesalahan.");
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantap AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-      } catch (error) {
-        loadingDiv.remove();
-        addMessage("bot", "❌ Gagal terhubung ke server.");
-      }
-    });
-  </script>
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        
+        .typing-dot {
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        .message-content pre {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .message-content code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 font-sans">
+    
+    <!-- Header -->
+    <div class="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <div class="max-w-3xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-sm font-bold">M</span>
+                    </div>
+                    <h1 class="text-lg font-semibold text-gray-900">Mantap AI</h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full" id="statusDot"></div>
+                    <span class="text-sm text-gray-600" id="statusText">Connecting...</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  <style>
-    /* Animasi sederhana */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fadeIn {
-      animation: fadeIn 0.3s ease-in-out;
-    }
-  </style>
+    <!-- Chat Container -->
+    <div class="max-w-3xl mx-auto">
+        
+        <!-- Welcome Message -->
+        <div id="welcomeMessage" class="px-4 py-8 text-center">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl">👋</span>
+            </div>
+            <h2 class="text-xl font-medium text-gray-900 mb-2">Selamat datang di Mantap AI</h2>
+            <p class="text-gray-600 max-w-md mx-auto">
+                Saya adalah asisten AI yang siap membantu Anda dalam berbagai hal. 
+                Silakan ajukan pertanyaan atau mulai percakapan.
+            </p>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="chatMessages" class="px-4 pb-32">
+            <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="hidden px-4 mb-6">
+            <div class="flex items-start gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white text-sm font-bold">M</span>
+                </div>
+                <div class="flex items-center gap-2 bg-gray-100 rounded-2xl px-4 py-3">
+                    <span class="text-sm text-gray-600">Mengetik</span>
+                    <div class="flex gap-1">
+                        <div class="w-1 h-1 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-1 h-1 bg-gray-400 rounded-full typing-dot"></div>
+                        <div class="w-1 h-1 bg-gray-400 rounded-full typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Container -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div class="max-w-3xl mx-auto p-4">
+            <div class="flex items-end gap-3">
+                <div class="flex-1 relative">
+                    <textarea
+                        id="messageInput"
+                        placeholder="Tulis pesan..."
+                        class="w-full min-h-[44px] max-h-32 px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-lg resize-none outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                        rows="1"
+                    ></textarea>
+                    <button
+                        id="sendButton"
+                        onclick="sendMessage()"
+                        class="absolute right-2 bottom-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-md flex items-center justify-center text-white transition-colors"
+                        disabled
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
+                <div class="flex items-center gap-4">
+                    <span id="modelInfo">Model: Loading...</span>
+                    <span id="sessionInfo"></span>
+                </div>
+                <div>
+                    <kbd class="px-2 py-1 bg-gray-100 rounded text-xs">⏎</kbd>
+                    <span class="ml-1">untuk kirim</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isConnected = false;
+        let currentModel = '';
+        let sessionId = '';
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                isConnected = data.ollama_connected;
+                updateStatus(isConnected);
+                
+                if (isConnected) {
+                    await loadModels();
+                }
+                
+                return isConnected;
+            } catch (error) {
+                console.error('Health check failed:', error);
+                updateStatus(false);
+                return false;
+            }
+        }
+
+        async function loadModels() {
+            try {
+                const response = await fetch('/models');
+                const data = await response.json();
+                currentModel = data.default || 'Unknown';
+                document.getElementById('modelInfo').textContent = `Model: ${currentModel}`;
+            } catch (error) {
+                console.error('Failed to load models:', error);
+            }
+        }
+
+        function updateStatus(connected) {
+            const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
+            
+            if (connected) {
+                statusText.textContent = 'Online';
+                statusDot.className = 'w-2 h-2 bg-green-500 rounded-full';
+            } else {
+                statusText.textContent = 'Offline';
+                statusDot.className = 'w-2 h-2 bg-red-500 rounded-full';
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const message = input.value.trim();
+            
+            if (!message || sendButton.disabled) return;
+
+            if (!isConnected) {
+                showError('Layanan AI tidak tersedia saat ini.');
+                return;
+            }
+
+            hideWelcomeMessage();
+            addMessage(message, 'user');
+            input.value = '';
+            adjustTextareaHeight(input);
+            updateSendButton();
+            
+            showTypingIndicator();
+
+            try {
+                const formData = new FormData();
+                formData.append('prompt', message);
+
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Terjadi kesalahan');
+                }
+
+                const data = await response.json();
+                
+                hideTypingIndicator();
+                addMessage(data.reply, 'ai');
+
+                if (data.session_id) {
+                    sessionId = data.session_id;
+                    document.getElementById('sessionInfo').textContent = `Session: ${sessionId}`;
+                }
+
+            } catch (error) {
+                console.error('Send message error:', error);
+                hideTypingIndicator();
+                showError(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
+            } finally {
+                input.focus();
+            }
+        }
+
+        function hideWelcomeMessage() {
+            const welcomeMsg = document.getElementById('welcomeMessage');
+            if (welcomeMsg) {
+                welcomeMsg.style.display = 'none';
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `mb-6 animate-fade-in ${sender === 'user' ? 'flex justify-end' : 'flex justify-start'}`;
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start gap-3 max-w-[80%]">
+                        <div class="bg-blue-600 text-white rounded-2xl px-4 py-3 order-2">
+                            <div class="text-sm whitespace-pre-wrap">${escapeHtml(text)}</div>
+                        </div>
+                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 order-3">
+                            <span class="text-gray-700 text-sm font-medium">U</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="flex items-start gap-3 max-w-[90%]">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span class="text-white text-sm font-bold">M</span>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+                            <div class="text-sm whitespace-pre-wrap message-content">${formatMessage(text)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function formatMessage(text) {
+            // Simple formatting for code blocks and inline code
+            text = escapeHtml(text);
+            
+            // Format code blocks
+            text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            
+            // Format inline code
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Format bold text
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            return text;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('hidden');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm animate-fade-in';
+            errorDiv.textContent = message;
+            messagesContainer.appendChild(errorDiv);
+            scrollToBottom();
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 128);
+            textarea.style.height = newHeight + 'px';
+        }
+
+        function updateSendButton() {
+            const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = !input.value.trim();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('messageInput');
+            
+            input.addEventListener('keydown', handleKeyPress);
+            input.addEventListener('input', function() {
+                adjustTextareaHeight(this);
+                updateSendButton();
+            });
+
+            checkHealth();
+            setInterval(checkHealth, 30000);
+
+            input.focus();
+        });
+    </script>
 </body>
 </html>
