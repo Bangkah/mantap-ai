@@ -15,14 +15,14 @@ UI didesain modern & responsif menggunakan **TailwindCSS**.
 ---
 
 ## 📂 Struktur Project
-
+<pre>
 mantap-ai/
 │── main.py # FastAPI backend
 │── templates/
 │ └── index.html # UI Chat (Frontend)
-│── static/ # (opsional) file CSS/JS tambahan
+│── static/ # file CSS/JS tambahan
 │── README.md
-
+</pre>
 
 ---
 
