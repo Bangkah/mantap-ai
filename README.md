@@ -77,7 +77,7 @@ UI dibuat minimalis, modern, dan responsif:
     Gradient background & rounded card style.
 
 ## 📸 Screenshot
-![alt text](image.png)
+![alt text](image-1.png)
     
 
 ## 🤝 Kontribusi
