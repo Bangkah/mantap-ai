@@ -37,6 +37,8 @@ mantap-ai/
     python -m venv venv
     source venv/bin/activate   # Linux/Mac
     venv\Scripts\activate      # Windows
+    source venv/bin/activate.fish    #fish shell
+
 
 3. **Install dependencies**
     ```bash
@@ -78,7 +80,7 @@ UI dibuat minimalis, modern, dan responsif:
 
 ## 📸 Screenshot
 ![alt text](image-1.png)
-    
+![alt text](image-2.png)
 
 ## 🤝 Kontribusi
 
