@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mantap AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-indigo-100 via-white to-pink-100 min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white/70 backdrop-blur-md shadow-md py-4 px-6 sticky top-0 z-10">
+    <h1 class="text-2xl font-bold text-indigo-600 text-center">✨ Mantap AI ✨</h1>
+    <p class="text-center text-gray-500 text-sm">Asisten pintar siap membantu Anda</p>
+  </header>
+
+  <!-- Chat Container -->
+  <main class="flex-1 flex justify-center py-6 px-4">
+    <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden">
+      
+      <!-- Chat messages -->
+      <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <!-- Pesan akan muncul di sini -->
+      </div>
+
+      <!-- Input form -->
+      <form id="chat-form" class="flex items-center gap-2 border-t bg-white p-4">
+        <input 
+          type="text" 
+          id="user-input" 
+          name="prompt" 
+          placeholder="Ketik pesan Anda..." 
+          class="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+          required
+        >
+        <button 
+          type="submit" 
+          class="bg-indigo-500 text-white px-5 py-2 rounded-full shadow hover:bg-indigo-600 transition"
+        >
+          Kirim
+        </button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const chatBox = document.getElementById("chat-box");
+
+    function addMessage(sender, text) {
+      const div = document.createElement("div");
+      div.classList.add("flex", sender === "user" ? "justify-end" : "justify-start");
+      div.innerHTML = `
+        <div class="max-w-xs md:max-w-sm px-4 py-2 rounded-2xl shadow 
+          ${sender === "user" 
+            ? "bg-indigo-500 text-white rounded-br-none" 
+            : "bg-gray-200 text-gray-800 rounded-bl-none"}">
+          ${text}
+        </div>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    chatForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      addMessage("user", message);
+      userInput.value = "";
+
+      // Loading bubble
+      const loadingDiv = document.createElement("div");
+      loadingDiv.classList.add("flex", "justify-start");
+      loadingDiv.innerHTML = `
+        <div class="bg-gray-200 text-gray-600 px-4 py-2 rounded-2xl rounded-bl-none animate-pulse">
+          ...
+        </div>`;
+      chatBox.appendChild(loadingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const formData = new FormData();
+        formData.append("prompt", message);
+
+        const response = await fetch("/chat", {
+          method: "POST",
+          body: formData
+        });
+        const data = await response.json();
+
+        loadingDiv.remove();
+        if (data.reply) {
+          addMessage("bot", data.reply);
+        } else {
+          addMessage("bot", "⚠️ Terjadi kesalahan.");
+        }
+      } catch (error) {
+        loadingDiv.remove();
+        addMessage("bot", "❌ Gagal terhubung ke server.");
+      }
+    });
+  </script>
+</body>
+</html>
