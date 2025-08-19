@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gradient-to-r from-indigo-100 via-white to-pink-100 min-h-screen flex flex-col">
+
   <!-- Header -->
   <header class="bg-white/70 backdrop-blur-md shadow-md py-4 px-6 sticky top-0 z-10">
     <h1 class="text-2xl font-bold text-indigo-600 text-center">✨ Mantap AI ✨</h1>
@@ -19,7 +20,7 @@
       
       <!-- Chat messages -->
       <div id="chat-box" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-        <!-- Pesan akan muncul di sini -->
+        <div class="text-center text-gray-400 text-sm">💬 Mulai percakapan dengan Mantap AI</div>
       </div>
 
       <!-- Input form -->
@@ -42,6 +43,11 @@
     </div>
   </main>
 
+  <!-- Footer -->
+  <footer class="bg-white/70 backdrop-blur-md shadow-inner py-3 text-center text-gray-600 text-sm">
+    &copy; 2025 Muhammad Dhiyaul Atha. All Rights Reserved.
+  </footer>
+
   <script>
     const chatForm = document.getElementById("chat-form");
     const userInput = document.getElementById("user-input");
@@ -49,7 +55,7 @@
 
     function addMessage(sender, text) {
       const div = document.createElement("div");
-      div.classList.add("flex", sender === "user" ? "justify-end" : "justify-start");
+      div.classList.add("flex", sender === "user" ? "justify-end" : "justify-start", "animate-fadeIn");
       div.innerHTML = `
         <div class="max-w-xs md:max-w-sm px-4 py-2 rounded-2xl shadow 
           ${sender === "user" 
@@ -101,5 +107,16 @@
       }
     });
   </script>
+
+  <style>
+    /* Animasi sederhana */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+  </style>
 </body>
 </html>

@@ -10,7 +10,6 @@ UI didesain modern & responsif menggunakan **TailwindCSS**.
 - 💬 Chat API (`/chat`) + Streaming API (`/chat-stream`).
 - 🖥️ WebUI cantik berbasis **HTML + TailwindCSS**.
 - 🌐 CORS sudah diaktifkan (siap untuk frontend custom).
-- 📦 Siap dipush ke GitHub & dijalankan via `uvicorn`.
 
 ---
 
@@ -78,7 +77,7 @@ UI dibuat minimalis, modern, dan responsif:
     Gradient background & rounded card style.
 
 ## 📸 Screenshot
-
+![alt text](image.png)
     
 
 ## 🤝 Kontribusi
